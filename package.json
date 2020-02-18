@@ -1,0 +1,29 @@
+{
+  "name": "power4simu_visu",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node src/nodemon_wrapper.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "mocha": "^7.0.1",
+    "nodemon": "^2.0.2"
+  },
+  "dependencies": {
+    "bootstrap": "^4.4.1",
+    "bootstrap4-toggle": "^3.6.1",
+    "express": "^4.17.1",
+    "jquery": "^3.4.1",
+    "jquery.terminal": "^2.12.0",
+    "octicons": "^8.5.0",
+    "popper.js": "^1.16.1",
+    "serialport": "^8.0.7",
+    "socketio": "^1.0.0",
+    "yargs": "^15.1.0"
+  }
+}

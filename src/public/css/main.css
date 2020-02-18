@@ -1,0 +1,83 @@
+body {
+  background: #282828;
+  color: #ffffff;
+}
+
+.main .container {
+  text-align: center;
+  width: 100%;
+}
+
+.main .row {
+  text-align: center;
+  width:100%;
+}
+
+.main .col-sm {
+  text-align: center;
+  width:100%;
+}
+
+.controls {
+  max-width: 330px;
+  margin: 0 auto;
+}
+
+.main > .row {
+  margin-bottom: 3em;
+}
+
+.separator {
+  height:1em;
+}
+
+.hide {
+  display: none;
+}
+
+.control {
+  background-color: #FFFFFF;
+  width: 28px;
+  height: 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.control-left {
+  background-image: url('/static/img/octicons/chevron-left.svg');
+}
+
+.control-right {
+  background-image: url('/static/img/octicons/chevron-right.svg');
+}
+
+.control-down {
+  background-image: url('/static/img/octicons/chevron-down.svg');
+}
+
+.control-up {
+  background-image: url('/static/img/octicons/chevron-up.svg');
+}
+
+#console {
+  text-align: left;
+}
+
+#color-label {
+  margin: 15px;
+  height: 30px;
+  width: 100%;
+} 
+
+#color-picker {
+  background-color: white;
+  height: 150px;
+  width: 185px;
+  border: solid 1px #ccc;
+  opacity: 0;
+  padding: 5px;
+}
+
+canvas:hover {
+    cursor: crosshair;
+}
