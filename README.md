@@ -9,6 +9,7 @@ Ce simulateur permet au choix :
 Pour faire fonctionner le simulateur, il faut:
 - nodejs (testé avec node v10.18.0)
 - npm
+- socat (pour les tests ou le dev sur PC)
 - les droits d'accès au port série
 
 ```bash

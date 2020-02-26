@@ -41,10 +41,17 @@ io.of('ihm').on('connection', function(socket) {
     }
   }
 
+  let received="";
   let serial = new powerSerialPort(socket, (data) => {
-    let decoded = codec.decodeRingCommand(data, board.leds_per_ring);
-    current_board[decoded.row][decoded.column] = decoded.leds;
-    socket.emit('update_ring_status',new Date().getTime(), data.toString(), decoded);
+    console.log('Received from core: ' + JSON.stringify(data));
+    received = codec.accumulateRingCommand(received, data);
+
+    while(codec.isRingCommandComplete(received, board.leds_per_ring)) {
+      let decoded = codec.decodeRingCommand(received, board.leds_per_ring);
+      received = codec.clearRingCommand(received, board.leds_per_ring);
+      current_board[decoded.row][decoded.column] = decoded.leds;
+      socket.emit('update_ring_status',new Date().getTime(), data.toString(), decoded);
+    }
   });
 
   socket.on('get_board_status', (fn) => {
@@ -61,15 +68,24 @@ io.of('ihm').on('connection', function(socket) {
 io.of('core').on('connection', function(socket) {
   console.log('a core user connected');
 
+  let received = "";
   serial = new powerSerialPort(socket, (data) => {
-    let decoded = codec.decodePlayerCommand(data);
-    socket.emit('player_event', new Date().getTime(), data.toString(), decoded);
+    console.log('Received from IHM: ' + JSON.stringify(data));
+    received = codec.accumulatePlayerCommand(received, data);
+
+    while(codec.isPlayerCommandComplete(received)) {
+      let decoded = codec.decodePlayerCommand(received);
+      received = codec.clearPlayerCommand(received);
+      socket.emit('player_event', new Date().getTime(), received, decoded);
+    }
   });
 
   socket.on('ring_update', function(data) {
     serial.write(codec.encodeRingCommand(data.row, data.column, data.leds));
   });
 });
+
+console.log(JSON.stringify(process.argv));
 
 const argv = require('yargs')
   .usage('Usage $0 [options]')
@@ -83,10 +99,32 @@ const argv = require('yargs')
   .default('port', 3000)
   .argv;
 
-
-
-http.listen(argv.port ? argv.port : 3000, function() { 
+http.listen(argv.hasOwnProperty('port') ? argv.port : 3000, function() { 
   let port = this.address().port;
   console.log('listening on *:' + port);
   console.log('You can access to serveur using : http://localhost:' + port);
+  let fs = require('fs');
+  fs.writeFileSync('.simu_env', 'SIMU_PORT='+port+'\nSIMU_PID='+process.pid+'\n');
 });
+
+function exitHandler(options, exitCode) {
+  if (options.cleanup) {
+    let fs = require('fs');
+    fs.unlinkSync('.simu_env');
+  }
+  if (exitCode || exitCode === 0) console.log(exitCode);
+  if (options.exit) process.exit();
+}
+
+//do something when app is closing
+process.on('exit', exitHandler.bind(null,{cleanup:true}));
+
+//catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, {exit:true}));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, {exit:true}));
+process.on('SIGUSR2', exitHandler.bind(null, {exit:true}));
+
+//catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, {exit:true}));
