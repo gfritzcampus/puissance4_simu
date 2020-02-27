@@ -7,6 +7,7 @@ const board = require('./board_config');
 const powerSerialPort = require('./powerSerialPort');
 const codec = require('./codec');
 const octicons = require('octicons');
+const async = require('async');
 
 app.use('/', express.static(path.resolve(__dirname, 'public')));
 app.use('/static', express.static(path.resolve(__dirname, '../node_modules/bootstrap/dist')));
@@ -46,12 +47,17 @@ io.of('ihm').on('connection', function(socket) {
     console.log('Received from core: ' + JSON.stringify(data));
     received = codec.accumulateRingCommand(received, data);
 
-    while(codec.isRingCommandComplete(received, board.leds_per_ring)) {
-      let decoded = codec.decodeRingCommand(received, board.leds_per_ring);
-      received = codec.clearRingCommand(received, board.leds_per_ring);
-      current_board[decoded.row][decoded.column] = decoded.leds;
-      socket.emit('update_ring_status',new Date().getTime(), data.toString(), decoded);
-    }
+    async.whilst(
+      (cb) => cb(null,codec.isRingCommandComplete(received, board.leds_per_ring)),
+      (next) => {
+        let decoded = codec.decodeRingCommand(received, board.leds_per_ring);
+        current_board[decoded.row][decoded.column] = decoded.leds;
+        socket.emit('update_ring_status',new Date().getTime(), received, decoded, () => {
+          received = codec.clearRingCommand(received, board.leds_per_ring);
+          next(null, received);
+        })
+      },
+      (err, n) => {});
   });
 
   socket.on('get_board_status', (fn) => {
@@ -75,8 +81,8 @@ io.of('core').on('connection', function(socket) {
 
     while(codec.isPlayerCommandComplete(received)) {
       let decoded = codec.decodePlayerCommand(received);
-      received = codec.clearPlayerCommand(received);
       socket.emit('player_event', new Date().getTime(), received, decoded);
+      received = codec.clearPlayerCommand(received);
     }
   });
 

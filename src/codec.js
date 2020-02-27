@@ -53,7 +53,7 @@ const isRingCommandComplete = function(rawdata, expectedNbLeds) {
 const clearRingCommand = function(received, expectedNbLeds) {
   do {
     received = received.substring(4 + expectedNbLeds * 3);
-  } while(received.length > 0 && received[0] != 'p');
+  } while(received.length > 0 && received[0] != 'r');
   return received;
 }
 
