@@ -89,6 +89,26 @@ io.of('core').on('connection', function(socket) {
   socket.on('ring_update', function(data) {
     serial.write(codec.encodeRingCommand(data.row, data.column, data.leds, board.leds_per_ring));
   });
+
+  socket.on('zone_color', function(data) {
+    serial.write(codec.encodeZoneColorCommand(data.zone, data.color));
+  });
+
+  socket.on('zone_on', function(data) {
+    serial.write(codec.encodeZoneOnCommand(data.zone));
+  });
+
+  socket.on('zone_off', function(data) {
+    serial.write(codec.encodeZoneOffCommand(data.zone));
+  });
+
+  socket.on('zone_intensity', function(data) {
+    serial.write(codec.encodeZoneIntensityCommand(data.zone, data.intensity));
+  });
+
+  socket.on('zone_blink', function(data) {
+    serial.write(codec.encodeZoneBlinkCommand(data.zone, data.blink));
+  });
 });
 
 console.log(JSON.stringify(process.argv));

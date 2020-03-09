@@ -66,9 +66,9 @@
                     <div class="col-sm">
                       <button id="controls_player1_down" class="control control-down" disabled></button>
                     </div>
-                    <div class="col-sm">
+                    <!--<div class="col-sm">
                       <button id="controls_player1_up" class="control control-up" disabled></button>
-                    </div>
+                    </div>-->
                     <div class="col-sm">
                       <button id="controls_player1_right" class="control control-right" disabled></button>
                     </div>
@@ -89,9 +89,9 @@
                     <div class="col-sm">
                       <button id="controls_player2_down" class="control control-down" disabled></button>
                     </div>
-                    <div class="col-sm">
+                    <!--<div class="col-sm">
                       <button id="controls_player2_up" class="control control-up" disabled></button>
-                    </div>
+                    </div>-->
                     <div class="col-sm">
                       <button id="controls_player2_right" class="control control-right" disabled></button>
                     </div>
@@ -114,17 +114,17 @@
                 <div class="container">
                   <div class="row">
                     <div class="col-sm">
-                      R : <input id="color-input-red" value="255" size="3" />
+                      R : <input id="color-input-red" value="255" type="number" min="0" max="255" step="1" class="byte" />
                     </div>
                   </div>
                   <div class="row">
                     <div class="col-sm">
-                      G : <input id="color-input-green" value="0" size="3" />
+                      G : <input id="color-input-green" value="0" type="number" min="0" max="255" step="1" class="byte" />
                     </div>
                   </div>
                   <div class="row">
                     <div class="col-sm">
-                      B : <input id="color-input-blue" value="0" size="3" />
+                      B : <input id="color-input-blue" value="0" type="number" min="0" max="255" step="1" class="byte" />
                     </div>
                   </div>
                   <div class="row">
@@ -135,20 +135,98 @@
                   <div class="row">
                     <div class="col-sm">
                       <input type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="led_status" />
-                      <button class="btn btn-success" id="all_leds">Toutes</button>
+                      <button class="btn btn-success many-leds" id="all_leds">Toutes</button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-sm">
+              <div class="col-sm many-leds">
                 <canvas width="150px" height="150px" id="ring"></canvas>
               </div>
               <div class="col-sm">
-                Colonne : <input type="input" value="0" size="1" id="ring_col" /><br />
-                Ligne : <input type="input" value="0" size="1" id="ring_row" /><br />
+                Colonne : <input type="number" min="0" max="6" step="1" class="coordonate-col coordonate" value="0" id="ring_col" /><br />
+                Ligne : <input type="number" min="0" max="6" step="1" class="coordonate-row coordonate" value="0" id="ring_row" /><br />
                 <button class="btn btn-success" id="send_ring">Envoyer</button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm">
+          <div id="zone-coordonates">
+            <div class="container">
+              <div class="row">
+                <div class="col-sm">
+                  Colonne<sub>haut-gauche</sub>
+                </div>
+                <div class="col-sm">
+                  <input type="number" min="0" max="6" step="1" value="0" class="coordonate-col coordonate" id="zone-top-left-col" />
+                </div>
+                <div class="col-sm">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm">
+                  Ligne<sub>haut-gauche</sub>
+                </div>
+                <div class="col-sm">
+                  <input type="number" min="0" max="6" step="1" value="0" class="coordonate-row coordonate" id="zone-top-left-row" />
+                </div>
+                <div class="col-sm">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm">
+                  Colonne<sub>bas-droit</sub>
+                </div>
+                <div class="col-sm">
+                  <input type="number" min="0" max="6" step="1" class="coordonate-col coordonate" value="0" id="zone-bottom-right-col" />
+                </div>
+                <div class="col-sm">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm">
+                  Ligne<sub>bas-droit</sub>
+                </div>
+                <div class="col-sm">
+                  <input type="number" min="0" max="6" step="1" class="coordonate-row coordonate" value="0" id="zone-bottom-right-row" />
+                </div>
+                <div class="col-sm">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm">
+                  Intensité (%)
+                </div>
+                <div class="col-sm">
+                  <input type="number" value="100" min="0" max="100" step="1" class="byte" id="zone-intensity" />
+                </div>
+                <div class="col-sm">
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-sm">
+                  Clignotement
+                </div>
+                <div class="col-sm">
+                  On (10ms)<input type="number" min="0" max="65535" step="1" value="500" class="short" id="zone-blink-on" />
+                </div>
+                <div class="col-sm">
+                  Off (10ms)<input type="number" min="0" max="65535" step="1" value="500" class="short" id="zone-blink-off" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm">
+          <div id="zone-actions">
+            <button class="btn btn-success" id="send_zone_color">Change la couleur</button>
+            <button class="btn btn-success" id="send_zone_on">Allume</button>
+            <button class="btn btn-success" id="send_zone_off">Eteint</button>
+            <button class="btn btn-success" id="send_zone_intensity">Change l'intensité</button>
+            <button class="btn btn-success" id="send_zone_blink">Change le clignotement</button>
           </div>
         </div>
       </div>

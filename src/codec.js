@@ -1,6 +1,17 @@
-const encodeColorToHex = function(col) {
+const encodeByteToHex = function(col) {
   return (col < 16 ? '0' : '') + col.toString(16).toUpperCase();
 }
+
+const encodeShortToHex= function(col) {
+  let val = col.toString(16).toUpperCase();
+
+  while(val.length < 4) {
+    val = '0' + val;
+  }
+
+  return val;
+}
+
 const encodeRingCommand = function(row, col, leds, expectedNbLeds) {
   let cmd = 'r';
 
@@ -8,9 +19,9 @@ const encodeRingCommand = function(row, col, leds, expectedNbLeds) {
   cmd += col;
 
   if (expectedNbLeds == 1) {
-    cmd += encodeColorToHex(leds[0][0]);
-    cmd += encodeColorToHex(leds[0][1]);
-    cmd += encodeColorToHex(leds[0][2]);
+    cmd += encodeByteToHex(leds[0][0]);
+    cmd += encodeByteToHex(leds[0][1]);
+    cmd += encodeByteToHex(leds[0][2]);
   }
   else {
     leds.forEach((led) => {
@@ -144,7 +155,73 @@ const clearPlayerCommand = function(received) {
     received = received.substring(received.indexOf('\n')+1);
   } while(received.length > 0 && received[0] != 'p');
   return received;
-}
+};
+
+const encodeZoneColorCommand = function(zone, color) {
+  let cmd='c';
+  
+  cmd += zone.top_left.row;
+  cmd += zone.top_left.column;
+  cmd += zone.bottom_right.row;
+  cmd += zone.bottom_right.column;
+  cmd += encodeByteToHex(color[0]);
+  cmd += encodeByteToHex(color[1]);
+  cmd += encodeByteToHex(color[2]);
+  cmd += '\n';
+
+  return cmd;
+};
+
+const encodeZoneOnCommand = function(zone) {
+  let cmd='O';
+
+  cmd += zone.top_left.row;
+  cmd += zone.top_left.column;
+  cmd += zone.bottom_right.row;
+  cmd += zone.bottom_right.column;
+  cmd += '\n';
+
+  return cmd;
+};
+
+const encodeZoneOffCommand = function(zone) {
+  let cmd='o';
+
+  cmd += zone.top_left.row;
+  cmd += zone.top_left.column;
+  cmd += zone.bottom_right.row;
+  cmd += zone.bottom_right.column;
+  cmd += '\n';
+
+  return cmd;
+};
+
+const encodeZoneIntensityCommand = function(zone, intensity) {
+  let cmd='i';
+
+  cmd += zone.top_left.row;
+  cmd += zone.top_left.column;
+  cmd += zone.bottom_right.row;
+  cmd += zone.bottom_right.column;
+  cmd += encodeByteToHex(intensity);
+  cmd += '\n';
+
+  return cmd;
+};
+
+const encodeZoneBlinkCommand = function(zone, blink) {
+  let cmd='b';
+
+  cmd += zone.top_left.row;
+  cmd += zone.top_left.column;
+  cmd += zone.bottom_right.row;
+  cmd += zone.bottom_right.column;
+  cmd += encodeShortToHex(blink.on);
+  cmd += encodeShortToHex(blink.off);
+  cmd += '\n';
+
+  return cmd;
+};
 
 module.exports = {
   'encodePlayerCommand': encodePlayerCommand,
@@ -152,9 +229,20 @@ module.exports = {
   'isPlayerCommandComplete': isPlayerCommandComplete,
   'accumulatePlayerCommand': accumulatePlayerCommand,
   'clearPlayerCommand': clearPlayerCommand,
+
   'encodeRingCommand': encodeRingCommand,
   'decodeRingCommand': decodeRingCommand,
   'isRingCommandComplete': isRingCommandComplete,
   'accumulateRingCommand': accumulateRingCommand,
-  'clearRingCommand': clearRingCommand
+  'clearRingCommand': clearRingCommand,
+
+  'encodeZoneColorCommand': encodeZoneColorCommand,
+
+  'encodeZoneOnCommand': encodeZoneOnCommand,
+
+  'encodeZoneOffCommand': encodeZoneOffCommand,
+
+  'encodeZoneIntensityCommand': encodeZoneIntensityCommand,
+
+  'encodeZoneBlinkCommand': encodeZoneBlinkCommand,
 };
