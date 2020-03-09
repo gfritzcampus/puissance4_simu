@@ -87,7 +87,7 @@ io.of('core').on('connection', function(socket) {
   });
 
   socket.on('ring_update', function(data) {
-    serial.write(codec.encodeRingCommand(data.row, data.column, data.leds));
+    serial.write(codec.encodeRingCommand(data.row, data.column, data.leds, board.leds_per_ring));
   });
 });
 

@@ -1,13 +1,24 @@
-const encodeRingCommand = function(row, col, leds) {
+const encodeColorToHex = function(col) {
+  return (col < 16 ? '0' : '') + col.toString(16).toUpperCase();
+}
+const encodeRingCommand = function(row, col, leds, expectedNbLeds) {
   let cmd = 'r';
 
   cmd += row;
   cmd += col;
-  leds.forEach((led) => {
-    cmd+=String.fromCharCode(led[0]);
-    cmd+=String.fromCharCode(led[1]);
-    cmd+=String.fromCharCode(led[2]);
-  });
+
+  if (expectedNbLeds == 1) {
+    cmd += encodeColorToHex(leds[0][0]);
+    cmd += encodeColorToHex(leds[0][1]);
+    cmd += encodeColorToHex(leds[0][2]);
+  }
+  else {
+    leds.forEach((led) => {
+      cmd+=String.fromCharCode(led[0]);
+      cmd+=String.fromCharCode(led[1]);
+      cmd+=String.fromCharCode(led[2]);
+    });
+  }
   cmd += '\n';
 
   return cmd;
@@ -21,13 +32,22 @@ const decodeRingCommand = function(rawdata, expectedNbLeds) {
       'column': parseInt(rawdata[2]),
       'leds': []
     };
-    
-    for(let i = 0; i < expectedNbLeds; i++) {
+
+    if (expectedNbLeds == 1) {
       result.leds.push([
-        rawdata.charCodeAt(3 + (i*3)),
-        rawdata.charCodeAt(4 + (i*3)),
-        rawdata.charCodeAt(5 + (i*3)),
-      ]);
+        parseInt(rawdata[3]+rawdata[4], 16),
+        parseInt(rawdata[5]+rawdata[6], 16),
+        parseInt(rawdata[7]+rawdata[8], 16),
+      ])
+    }
+    else {
+      for(let i = 0; i < expectedNbLeds; i++) {
+        result.leds.push([
+          rawdata.charCodeAt(3 + (i*3)),
+          rawdata.charCodeAt(4 + (i*3)),
+          rawdata.charCodeAt(5 + (i*3)),
+        ]);
+      }
     }
     return result;
   }
@@ -47,14 +67,27 @@ const accumulateRingCommand = function(received, rawdata) {
 };
 
 const isRingCommandComplete = function(rawdata, expectedNbLeds) {
-  return rawdata.length >= (4 + expectedNbLeds * 3) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3] == '\n';
+  if (expectedNbLeds == 1) {
+    return rawdata.length >= 10 && rawdata[0] == 'r' && rawdata[9] == '\n';
+  }
+  else {
+    return rawdata.length >= (4 + expectedNbLeds * 3) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3] == '\n';
+  }
 };
 
 const clearRingCommand = function(received, expectedNbLeds) {
-  do {
-    received = received.substring(4 + expectedNbLeds * 3);
-  } while(received.length > 0 && received[0] != 'r');
-  return received;
+  if (expectedNbLeds == 1) {
+    do {
+      received = received.substring(received.indexOf('\n')+1);
+    } while(received.length > 0 && received[0] != 'p');
+    return received;
+  }
+  else {
+    do {
+      received = received.substring(4 + expectedNbLeds * 3);
+    } while(received.length > 0 && received[0] != 'r');
+    return received;
+  }
 }
 
 const encodePlayerCommand = function(player, command, status) {
