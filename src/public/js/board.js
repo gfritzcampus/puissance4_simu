@@ -107,8 +107,7 @@ const appManageConnectedSocket = function(socket, config) {
     initBoard(ctx, config, status);
   });
 
-  socket.on('update_ring_status', (timestamp, raw, status, ack) => {
-    //ack();
+  socket.on('update_ring_status', (timestamp, raw, status) => {
     if (term) {
       term.echo(JSON.stringify({
         'timestamp': timestamp, 

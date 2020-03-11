@@ -53,10 +53,7 @@ io.of('ihm').on('connection', function(socket) {
         let decoded = codec.decodeIhmCommand(received, board.leds_per_ring);
 
         let promise = new Promise((resolve, reject) => {
-          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded/*, () => {
-            received = codec.clearIhmCommand(received, board.leds_per_ring);
-            next(null, received);
-          }*/);
+          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded);
           resolve();
         });
         promise.then(() => {
