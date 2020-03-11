@@ -45,19 +45,27 @@ io.of('ihm').on('connection', function(socket) {
   let received="";
   let serial = new powerSerialPort(socket, (data) => {
     console.log('Received from core: ' + JSON.stringify(data));
-    received = codec.accumulateRingCommand(received, data);
+    received = codec.accumulateIhmCommand(received, data);
 
     async.whilst(
-      (cb) => cb(null,codec.isRingCommandComplete(received, board.leds_per_ring)),
+      (cb) => cb(null,codec.isIhmCommandComplete(received, board.leds_per_ring)),
       (next) => {
-        let decoded = codec.decodeRingCommand(received, board.leds_per_ring);
-        current_board[decoded.row][decoded.column] = decoded.leds;
-        socket.emit('update_ring_status',new Date().getTime(), received, decoded, () => {
-          received = codec.clearRingCommand(received, board.leds_per_ring);
+        let decoded = codec.decodeIhmCommand(received, board.leds_per_ring);
+
+        let promise = new Promise((resolve, reject) => {
+          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded/*, () => {
+            received = codec.clearIhmCommand(received, board.leds_per_ring);
+            next(null, received);
+          }*/);
+          resolve();
+        });
+        promise.then(() => {
+          received = codec.clearIhmCommand(received, board.leds_per_ring);
           next(null, received);
-        })
+        });
       },
-      (err, n) => {});
+      (err, n) => {}
+    );
   });
 
   socket.on('get_board_status', (fn) => {
