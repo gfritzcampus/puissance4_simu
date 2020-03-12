@@ -47,6 +47,10 @@ io.of('ihm').on('connection', function(socket) {
     console.log('Received from core: ' + JSON.stringify(data));
     received = codec.accumulateIhmCommand(received, data);
 
+    while (board.leds_per_ring == 1 && !codec.isIhmCommandComplete(received, board.leds_per_ring) && received.indexOf('\n') != -1) {
+      received = received.substring(received.indexOf('\n')+1);
+    }
+
     async.whilst(
       (cb) => cb(null,codec.isIhmCommandComplete(received, board.leds_per_ring)),
       (next) => {
@@ -83,6 +87,10 @@ io.of('core').on('connection', function(socket) {
   serial = new powerSerialPort(socket, (data) => {
     console.log('Received from IHM: ' + JSON.stringify(data));
     received = codec.accumulatePlayerCommand(received, data);
+
+    while(!codec.isPlayerCommandComplete(received) && received.indexOf('\n') != -1) {
+      received = received.substring(received.indexOf('\n')+1);
+    }
 
     while(codec.isPlayerCommandComplete(received)) {
       let decoded = codec.decodePlayerCommand(received);

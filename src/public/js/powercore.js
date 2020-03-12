@@ -69,8 +69,15 @@ const appManageConnectedSocket = function(socket, config) {
     });
   }
 
-  for(let i = 0; i < config.leds_per_ring; i++) {
-    status.push([0, 0, 0]);
+  {
+    let color = [ 
+      parseInt($('#color-input-red').val()),
+      parseInt($('#color-input-green').val()),
+      parseInt($('#color-input-blue').val())
+    ];
+    for(let i = 0; i < config.leds_per_ring; i++) {
+      status.push(color);
+    }
   }
 
   $('.coordonate-col').attr("max", config.columns - 1);

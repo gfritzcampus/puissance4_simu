@@ -24,7 +24,9 @@ const displayLed = function(ctx, led, center, config, status) {
   let start_angle = (Math.PI*2)/config.leds_per_ring*led - (Math.PI/2);
   let end_angle = (Math.PI*2)/config.leds_per_ring*(led+1) - (Math.PI/2);
   if (status) {
-    ctx.fillStyle = 'rgba(' + status[0] + ',' + status[1] + ',' + status[2] + ',1)';
+    let rgba = 'rgba(' + status[0] + ',' + status[1] + ',' + status[2] + ',' +
+                    (typeof status[3] === 'undefined' ? '1' : ''+(status[3]/100).toFixed(2)) + ')';
+    ctx.fillStyle = rgba;
   } else {
     ctx.fillStyle = 'black';
   }
@@ -44,6 +46,9 @@ const displayRing = function(ctx, row, col, config, status) {
     y: row*config.radius_of_ring_in_px*2 + config.radius_of_ring_in_px + row*config.distance_between_rings_in_px
   };
 
+  ctx.fillStyle = "#282828";// $('#board').css("background-color");
+  ctx.arc(center.x, center.y, config.radius_of_ring_in_px, Math.PI*2, false);
+  ctx.fill();
   for(let led = 0; led < config.leds_per_ring; led++) {
     displayLed(ctx, led, center, config, status && status[led] ? status[led] : null);
   }
@@ -97,29 +102,152 @@ const displayRaw = function(raw) {
   return result;
 }
 
+const logInTerm = function(timestamp, raw, decoded) {
+  if (term) {
+    term.echo(JSON.stringify({
+      'timestamp': timestamp, 
+      'raw': {
+        'length': raw.length,
+        'data': displayRaw(raw)
+      }, 
+      'decoded': decoded
+    }));
+  }
+};
+
 const appManageConnectedSocket = function(socket, config) {
   const canvas = $('#board')[0];
   const ctx = canvas.getContext('2d');
-
+  let zone = [];
+  for(let r = 0; r < config.rows; r++) {
+    zone.push([]);
+    for(let c = 0; c < config.columns; c++) {
+      zone[r].push({
+        color:[ 0,0,0 ],
+        intensity: 100,
+        status: 'off',
+        blink: {
+          on: 500,
+          off: 500
+        }
+      });
+    }
+  }
   console.log('Get status');
   socket.emit('get_board_status', (status) => {
     console.log('status -> '+ JSON.stringify(status));
     initBoard(ctx, config, status);
   });
+  
+  const changeRingColor = function(r, c, color) {
+    let status = [];
+    for (let l = 0; l < config.leds_per_ring; l++) {
+      status.push(color);
+    }
+    displayRing(ctx, r, c, config, status);
+  };
+
+  const turnOnRing = function(r, c) {
+    let color = zone[r][c].color.concat([zone[r][c].intensity]);
+    changeRingColor(r,c,color);
+  };
+
+  const turnOffRing = function(r, c) {
+    changeRingColor(r,c,[0, 0, 0]);
+  };
 
   socket.on('update_ring_status', (timestamp, raw, status) => {
-    if (term) {
-      term.echo(JSON.stringify({
-        'timestamp': timestamp, 
-        'raw': {
-          'length': raw.length,
-          'data': displayRaw(raw)
-        }, 
-        'decoded': status
-      }));
-    }
+    logInTerm(timestamp, raw, status);
     try {
       displayRing(ctx, status.row, status.column, config, status.leds);
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
+  socket.on('change_zone_color', (timestamp, raw, zone_color) => {
+    logInTerm(timestamp, raw, zone_color);
+    try {
+      for(let r = zone_color.zone.top_left.row; r <= zone_color.zone.bottom_right.row; ++r) {
+        for(let c = zone_color.zone.top_left.column; c <= zone_color.zone.bottom_right.column; ++c) {
+          zone[r][c].color = zone_color.color;
+        }
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
+  socket.on('turn_zone_on', (timestamp, raw, zone_on) => {
+    logInTerm(timestamp, raw, zone_on);
+    try {
+      for(let r = zone_on.zone.top_left.row; r <= zone_on.zone.bottom_right.row; ++r) {
+        for(let c = zone_on.zone.top_left.column; c <= zone_on.zone.bottom_right.column; ++c) {
+          zone[r][c].status='on';
+          turnOnRing(r, c);
+        }
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
+  socket.on('turn_zone_off', (timestamp, raw, zone_off) => {
+    logInTerm(timestamp, raw, zone_off);
+    try {
+      for(let r = zone_off.zone.top_left.row; r <= zone_off.zone.bottom_right.row; ++r) {
+        for(let c = zone_off.zone.top_left.column; c <= zone_off.zone.bottom_right.column; ++c) {
+          zone[r][c].status='off';
+          turnOffRing(r, c);
+        }
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
+  socket.on('change_zone_intensity', (timestamp, raw, zone_intensity) => {
+    logInTerm(timestamp, raw, zone_intensity);
+    try {
+      for(let r = zone_intensity.zone.top_left.row; r <= zone_intensity.zone.bottom_right.row; ++r) {
+        for(let c = zone_intensity.zone.top_left.column; c <= zone_intensity.zone.bottom_right.column; ++c) {
+          zone[r][c].intensity = zone_intensity.intensity;
+          if (zone[r][c].status=='on') {
+            turnOnRing(r, c);
+          }
+        }
+      }
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
+  socket.on('change_zone_blink', (timestamp, raw, zone_blink) => {
+    logInTerm(timestamp, raw, zone_blink);
+    try {
+      for(let r = zone_blink.zone.top_left.row; r <= zone_blink.zone.bottom_right.row; ++r) {
+        for(let c = zone_blink.zone.top_left.column; c <= zone_blink.zone.bottom_right.column; ++c) {
+          zone[r][c].status='blink';
+          zone[r][c].blink.on=zone_blink.on;
+          zone[r][c].blink.off=zone_blink.off;
+
+          const turnOn = () => {
+            if (zone[r][c].status == 'blink') {
+              turnOnRing(r,c);
+              setTimeout(turnOff, zone[r][c].blink.on);
+            }
+          };
+
+          const turnOff = () => {
+            if (zone[r][c].status == 'blink') {
+              turnOffRing(r,c);
+              setTimeout(turnOn, zone[r][c].blink.off);
+            }
+          };
+
+          turnOn();
+        }
+      }
     } catch(error) {
       console.log(error);
     }
