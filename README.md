@@ -9,12 +9,13 @@ Ce simulateur permet au choix :
 Pour faire fonctionner le simulateur, il faut:
 - nodejs (testé avec node v10.18.0)
 - npm
+- socat (pour les tests ou le dev sur PC)
 - les droits d'accès au port série
 
 ```bash
 # Pour Debian et dérivé
 curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-sudo apt-get install -y nodejs build-essential
+sudo apt-get install -y nodejs build-essential socat
 ```
 
 ## Installation
@@ -47,3 +48,9 @@ npm start -- --port 0
 
 Une fois le serveur démarrer, il faut lancer un navigateur web, et se rendre sur la page http://localhost:3000 (dans le cas
 ou le port par défaut est utilisé)
+
+## Pour faire du dev 100% PC
+
+```bash
+./scripts/launch_for_dev_pc.sh
+```

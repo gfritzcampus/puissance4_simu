@@ -59,9 +59,29 @@ const appManageConnectedSocket = function(socket, config) {
   displayRing(ctx, config, null);
   let status = [];
 
-  for(let i = 0; i < config.leds_per_ring; i++) {
-    status.push([0, 0, 0]);
+  if (config.leds_per_ring > 1) {
+    $('.many-leds').show();
   }
+  else {
+    $('.many-leds').hide();
+    $(document).on('select-color', (event, color) => {
+      status[0] = color;
+    });
+  }
+
+  {
+    let color = [ 
+      parseInt($('#color-input-red').val()),
+      parseInt($('#color-input-green').val()),
+      parseInt($('#color-input-blue').val())
+    ];
+    for(let i = 0; i < config.leds_per_ring; i++) {
+      status.push(color);
+    }
+  }
+
+  $('.coordonate-col').attr("max", config.columns - 1);
+  $('.coordonate-row').attr("max", config.rows - 1);
 
   $('#ring').off();
   $('#ring').on('click', (e) => {
@@ -84,7 +104,7 @@ const appManageConnectedSocket = function(socket, config) {
         parseInt($('#color-input-blue').val())
       ];
       displayLed(ctx, led, {x:75,y:75}, config, color);
-      status[led]=color;
+      status[led] = color;
     }
   });
 
@@ -109,6 +129,98 @@ const appManageConnectedSocket = function(socket, config) {
       'leds': status
     });
   });
+
+  $('#send_zone_color').off();
+  $('#send_zone_color').on('click', () => {
+    let color = [ 
+      parseInt($('#color-input-red').val()),
+      parseInt($('#color-input-green').val()),
+      parseInt($('#color-input-blue').val())
+    ];
+    socket.emit('zone_color', {
+      'zone':{
+        'top_left':{
+          'row': parseInt($("#zone-top-left-row").val()),
+          'column': parseInt($("#zone-top-left-col").val())
+        },
+        'bottom_right':{
+          'row': parseInt($("#zone-bottom-right-row").val()),
+          'column': parseInt($("#zone-bottom-right-col").val())
+        }
+      },
+      'color': color
+    });
+  });
+
+  $('#send_zone_on').off();
+  $('#send_zone_on').on('click', () => {
+    socket.emit('zone_on', {
+      'zone':{
+        'top_left':{
+          'row': parseInt($("#zone-top-left-row").val()),
+          'column': parseInt($("#zone-top-left-col").val())
+        },
+        'bottom_right':{
+          'row': parseInt($("#zone-bottom-right-row").val()),
+          'column': parseInt($("#zone-bottom-right-col").val())
+        },
+      }
+    });
+  });
+
+  $('#send_zone_off').off();
+  $('#send_zone_off').on('click', () => {
+    socket.emit('zone_off', {
+      'zone':{
+        'top_left':{
+          'row': parseInt($("#zone-top-left-row").val()),
+          'column': parseInt($("#zone-top-left-col").val())
+        },
+        'bottom_right':{
+          'row': parseInt($("#zone-bottom-right-row").val()),
+          'column': parseInt($("#zone-bottom-right-col").val())
+        },
+      }
+    });
+  });
+
+  $('#send_zone_intensity').off();
+  $('#send_zone_intensity').on('click', () => {
+    socket.emit('zone_intensity', {
+      'zone':{
+        'top_left':{
+          'row': parseInt($("#zone-top-left-row").val()),
+          'column': parseInt($("#zone-top-left-col").val())
+        },
+        'bottom_right':{
+          'row': parseInt($("#zone-bottom-right-row").val()),
+          'column': parseInt($("#zone-bottom-right-col").val())
+        },
+      },
+      'intensity': parseInt($('#zone-intensity').val())
+    });
+  });
+
+  $('#send_zone_blink').off();
+  $('#send_zone_blink').on('click', () => {
+    socket.emit('zone_blink', {
+      'zone':{
+        'top_left':{
+          'row': parseInt($("#zone-top-left-row").val()),
+          'column': parseInt($("#zone-top-left-col").val())
+        },
+        'bottom_right':{
+          'row': parseInt($("#zone-bottom-right-row").val()),
+          'column': parseInt($("#zone-bottom-right-col").val())
+        },
+      },
+      'blink': {
+        'on': parseInt($('#zone-blink-on').val()),
+        'off': parseInt($('#zone-blink-off').val())
+      }
+    });
+  });
+
 };
 
 const fillGradient = function(ctxBlock, ctxStrip, widthBlock, heightBlock, colorBase) {
@@ -134,6 +246,7 @@ const setSelectedColor = function(color) {
   $('#color-input-red').val(color[0]);
   $('#color-input-green').val(color[1]);
   $('#color-input-blue').val(color[2]);
+  $(document).trigger('select-color', [color]);
 }
 
 const changeSelectedColor = function(e, ctxBlock) {

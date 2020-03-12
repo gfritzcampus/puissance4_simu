@@ -6,7 +6,7 @@ const powerSerialPort = function(socket, data_decoder) {
 
   socket.on('disconnect', () => { 
     console.log('disconnected'); 
-    if (this.serial) {
+    if (this.serial && this.serial.isOpen) {
       this.serial.close();
     }
   });
@@ -17,7 +17,15 @@ const powerSerialPort = function(socket, data_decoder) {
 
   socket.on('get_serial_port', (fn) => {
     serialPort.list().then((ports) => {
-      fn(null, ports);
+      let fs = require('fs');
+      fs.readdir('/tmp/puissance4/serial', function(err, items) {
+        if (!err) {
+          items.forEach((e) => {
+            ports.push({path:'/tmp/puissance4/serial/'+e});
+          });
+        }
+        fn(null, ports);
+      });
     })
     .catch((error) => {
       fn(error, null);
@@ -60,7 +68,7 @@ const powerSerialPort = function(socket, data_decoder) {
   });
 
   socket.on('disconnect_from_board', () => {
-    if (this.serial) {
+    if (this.serial && this.serial.isOpen) {
       this.serial.close();
     }
   });

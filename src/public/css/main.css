@@ -81,3 +81,26 @@ body {
 canvas:hover {
     cursor: crosshair;
 }
+
+#zone-actions {
+  text-align: center;
+  vertical-align: center;
+}
+
+#zone-actions button {
+  display: block;
+  margin: auto;
+}
+
+input.coordonate {
+  width: 3em;
+}
+
+input.byte {
+  width: 4em;
+}
+
+input.short {
+  width: 6em;
+}
+
