@@ -18,18 +18,11 @@ const encodeRingCommand = function(row, col, leds, expectedNbLeds) {
   cmd += row;
   cmd += col;
 
-  if (expectedNbLeds == 1) {
-    cmd += encodeByteToHex(leds[0][0]);
-    cmd += encodeByteToHex(leds[0][1]);
-    cmd += encodeByteToHex(leds[0][2]);
-  }
-  else {
-    leds.forEach((led) => {
-      cmd+=String.fromCharCode(led[0]);
-      cmd+=String.fromCharCode(led[1]);
-      cmd+=String.fromCharCode(led[2]);
-    });
-  }
+  leds.forEach((led) => {
+    cmd += encodeByteToHex(led[0]);
+    cmd += encodeByteToHex(led[1]);
+    cmd += encodeByteToHex(led[2]);
+  });
   cmd += '\n';
 
   return cmd;
@@ -44,21 +37,12 @@ const decodeRingCommand = function(rawdata, expectedNbLeds) {
       'leds': []
     };
 
-    if (expectedNbLeds == 1) {
+    for(let i = 0; i < expectedNbLeds; i++) {
       result.leds.push([
-        parseInt(rawdata[3]+rawdata[4], 16),
-        parseInt(rawdata[5]+rawdata[6], 16),
-        parseInt(rawdata[7]+rawdata[8], 16),
-      ])
-    }
-    else {
-      for(let i = 0; i < expectedNbLeds; i++) {
-        result.leds.push([
-          rawdata.charCodeAt(3 + (i*3)),
-          rawdata.charCodeAt(4 + (i*3)),
-          rawdata.charCodeAt(5 + (i*3)),
-        ]);
-      }
+        parseInt(rawdata[3+(i*3)]+rawdata[4+(i*3)], 16),
+        parseInt(rawdata[5+(i*3)]+rawdata[6+(i*3)], 16),
+        parseInt(rawdata[7+(i*3)]+rawdata[8+(i*3)], 16),
+      ]);
     }
     return result;
   }
@@ -220,12 +204,7 @@ const accumulateIhmCommand = function(received, rawdata) {
 };
 
 const isRingCommandComplete = function(rawdata, expectedNbLeds) {
-  if (expectedNbLeds == 1) {
-    return rawdata.length >= 10 && rawdata[0] == 'r' && rawdata[9] == '\n';
-  }
-  else {
-    return rawdata.length >= (4 + expectedNbLeds * 3) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3] == '\n';
-  }
+  return rawdata.length >= (4 + expectedNbLeds * 3 * 2) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3 * 2] == '\n';
 };
 
 const isIhmCommandComplete = function(rawdata, expectedNbLeds) {
@@ -240,12 +219,7 @@ const clearStandardIhmCommand = function(received, expectedNbLeds) {
 };
 
 const clearRingCommand = function(received, expectedNbLeds) {
-  if (expectedNbLeds == 1) {
-    return clearStandardIhmCommand(received, expectedNbLeds);
-  }
-  else {
-    return received.substring(4 + expectedNbLeds * 3);
-  }
+  return clearStandardIhmCommand(received, expectedNbLeds);
 };
 
 const rawStandardIhmCommand = function(received, expectedNbLeds) {
@@ -253,8 +227,7 @@ const rawStandardIhmCommand = function(received, expectedNbLeds) {
 };
 
 const rawRingCommand = function(received, expectedNbLeds) {
-  return expectedNbLeds == 1 ? rawStandardIhmCommand(received, expectedNbLeds) 
-                             : received.substring(3 + expectedNbLeds * 3);
+  return rawStandardIhmCommand(received, expectedNbLeds);
 };
 
 const clearIhmCommand = function(received, expectedNbLeds) {
