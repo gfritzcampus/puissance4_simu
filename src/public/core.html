@@ -66,9 +66,9 @@
                     <div class="col-sm">
                       <button id="controls_player1_down" class="control control-down" disabled></button>
                     </div>
-                    <!--<div class="col-sm">
+                    <div class="col-sm">
                       <button id="controls_player1_up" class="control control-up" disabled></button>
-                    </div>-->
+                    </div>
                     <div class="col-sm">
                       <button id="controls_player1_right" class="control control-right" disabled></button>
                     </div>
@@ -89,9 +89,9 @@
                     <div class="col-sm">
                       <button id="controls_player2_down" class="control control-down" disabled></button>
                     </div>
-                    <!--<div class="col-sm">
+                    <div class="col-sm">
                       <button id="controls_player2_up" class="control control-up" disabled></button>
-                    </div>-->
+                    </div>
                     <div class="col-sm">
                       <button id="controls_player2_right" class="control control-right" disabled></button>
                     </div>
@@ -106,11 +106,11 @@
         <div class="col-sm">
           <div class="container">
             <div class="row">
-              <div class="col-sm" style="min-width:220px">
+              <div class="col-sm color_controller first" style="min-width:220px">
                 <canvas id="color-block" height="150px" width="150px"></canvas>
                 <canvas id="color-strip" height="150px" width="30px"></canvas>
               </div>
-              <div class="col-sm">
+              <div class="col-sm color_controller last">
                 <div class="container">
                   <div class="row">
                     <div class="col-sm">
@@ -135,24 +135,25 @@
                   <div class="row">
                     <div class="col-sm">
                       <input type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="led_status" />
-                      <button class="btn btn-success many-leds" id="all_leds">Toutes</button>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="col-sm many-leds">
-                <canvas width="150px" height="150px" id="ring"></canvas>
+              <div class="col-sm many-leds ring_controller first">
+                <canvas width="150px" height="150px" id="ring"></canvas><br />
+                <button class="btn btn-success many-leds" id="all_leds">Toutes</button>
               </div>
-              <div class="col-sm">
+              <div class="col-sm ring_controller last">
                 Colonne : <input type="number" min="0" max="6" step="1" class="coordonate-col coordonate" value="0" id="ring_col" /><br />
                 Ligne : <input type="number" min="0" max="6" step="1" class="coordonate-row coordonate" value="0" id="ring_row" /><br />
-                <button class="btn btn-success" id="send_ring">Envoyer</button>
+                <button class="btn btn-success" id="send_ring">Envoyer l'anneau complet</button><br />
+                <button class="btn btn-success" id="send_short_ring">Envoyer une seule couleur</button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="row">
+      <div class="row" id="zone_controller">
         <div class="col-sm">
           <div id="zone-coordonates">
             <div class="container">
@@ -222,11 +223,11 @@
         </div>
         <div class="col-sm">
           <div id="zone-actions">
-            <button class="btn btn-success" id="send_zone_color">Change la couleur</button>
-            <button class="btn btn-success" id="send_zone_on">Allume</button>
-            <button class="btn btn-success" id="send_zone_off">Eteint</button>
-            <button class="btn btn-success" id="send_zone_intensity">Change l'intensité</button>
-            <button class="btn btn-success" id="send_zone_blink">Change le clignotement</button>
+            <button class="btn btn-success" id="send_zone_color">Change la couleur de la zone</button>
+            <button class="btn btn-success" id="send_zone_on">Allume la zone</button>
+            <button class="btn btn-success" id="send_zone_off">Eteint la zone</button>
+            <button class="btn btn-success" id="send_zone_intensity">Change l'intensité de la zone</button>
+            <button class="btn btn-success" id="send_zone_blink">Change le clignotement de la zone</button>
           </div>
         </div>
       </div>

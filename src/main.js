@@ -103,6 +103,10 @@ io.of('core').on('connection', function(socket) {
     serial.write(codec.encodeRingCommand(data.row, data.column, data.leds, board.leds_per_ring));
   });
 
+  socket.on('ring_short_update', function(data) {
+    serial.write(codec.encodeShortRingCommand(data.row, data.column, data.color));
+  });
+
   socket.on('zone_color', function(data) {
     serial.write(codec.encodeZoneColorCommand(data.zone, data.color));
   });

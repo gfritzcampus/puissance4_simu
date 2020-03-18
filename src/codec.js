@@ -18,18 +18,24 @@ const encodeRingCommand = function(row, col, leds, expectedNbLeds) {
   cmd += row;
   cmd += col;
 
-  if (expectedNbLeds == 1) {
-    cmd += encodeByteToHex(leds[0][0]);
-    cmd += encodeByteToHex(leds[0][1]);
-    cmd += encodeByteToHex(leds[0][2]);
-  }
-  else {
-    leds.forEach((led) => {
-      cmd+=String.fromCharCode(led[0]);
-      cmd+=String.fromCharCode(led[1]);
-      cmd+=String.fromCharCode(led[2]);
-    });
-  }
+  leds.forEach((led) => {
+    cmd += encodeByteToHex(led[0]);
+    cmd += encodeByteToHex(led[1]);
+    cmd += encodeByteToHex(led[2]);
+  });
+  cmd += '\n';
+
+  return cmd;
+};
+
+const encodeShortRingCommand = function(row, col, color) {
+  let cmd = 'R';
+
+  cmd += row;
+  cmd += col;
+  cmd += encodeByteToHex(color[0]);
+  cmd += encodeByteToHex(color[1]);
+  cmd += encodeByteToHex(color[2]);
   cmd += '\n';
 
   return cmd;
@@ -44,25 +50,36 @@ const decodeRingCommand = function(rawdata, expectedNbLeds) {
       'leds': []
     };
 
-    if (expectedNbLeds == 1) {
+    for(let i = 0; i < expectedNbLeds; i++) {
       result.leds.push([
-        parseInt(rawdata[3]+rawdata[4], 16),
-        parseInt(rawdata[5]+rawdata[6], 16),
-        parseInt(rawdata[7]+rawdata[8], 16),
-      ])
-    }
-    else {
-      for(let i = 0; i < expectedNbLeds; i++) {
-        result.leds.push([
-          rawdata.charCodeAt(3 + (i*3)),
-          rawdata.charCodeAt(4 + (i*3)),
-          rawdata.charCodeAt(5 + (i*3)),
-        ]);
-      }
+        parseInt(rawdata[3+(i*3*2)]+rawdata[4+(i*3*2)], 16),
+        parseInt(rawdata[5+(i*3*2)]+rawdata[6+(i*3*2)], 16),
+        parseInt(rawdata[7+(i*3*2)]+rawdata[8+(i*3*2)], 16),
+      ]);
     }
     return result;
   }
   return {};
+};
+
+const decodeShortRingCommand = function(rawdata, expectedNbLeds) {
+  console.log('Try to decode short ring command :' + JSON.stringify(rawdata));
+  if (isShortRingCommandComplete(rawdata, expectedNbLeds)) {
+    return {
+      'row': parseInt(rawdata[1]),
+      'column': parseInt(rawdata[2]),
+      'color': [
+        parseInt(rawdata[3]+rawdata[4], 16),
+        parseInt(rawdata[5]+rawdata[6], 16),
+        parseInt(rawdata[7]+rawdata[8], 16),
+      ]
+    };
+  }
+  return {};
+};
+
+const isShortRingCommandComplete = function(rawdata, expectedNbLeds) {
+  return rawdata.length == 10 && rawdata[0] == 'R' && rawdata[9] == '\n';
 };
 
 const isZoneColorCommandComplete = function(rawdata, expectedNbLeds) {
@@ -220,12 +237,7 @@ const accumulateIhmCommand = function(received, rawdata) {
 };
 
 const isRingCommandComplete = function(rawdata, expectedNbLeds) {
-  if (expectedNbLeds == 1) {
-    return rawdata.length >= 10 && rawdata[0] == 'r' && rawdata[9] == '\n';
-  }
-  else {
-    return rawdata.length >= (4 + expectedNbLeds * 3) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3] == '\n';
-  }
+  return rawdata.length >= (4 + expectedNbLeds * 3 * 2) && rawdata[0] == 'r' && rawdata[3 + expectedNbLeds * 3 * 2] == '\n';
 };
 
 const isIhmCommandComplete = function(rawdata, expectedNbLeds) {
@@ -240,12 +252,7 @@ const clearStandardIhmCommand = function(received, expectedNbLeds) {
 };
 
 const clearRingCommand = function(received, expectedNbLeds) {
-  if (expectedNbLeds == 1) {
-    return clearStandardIhmCommand(received, expectedNbLeds);
-  }
-  else {
-    return received.substring(4 + expectedNbLeds * 3);
-  }
+  return clearStandardIhmCommand(received, expectedNbLeds);
 };
 
 const rawStandardIhmCommand = function(received, expectedNbLeds) {
@@ -253,8 +260,7 @@ const rawStandardIhmCommand = function(received, expectedNbLeds) {
 };
 
 const rawRingCommand = function(received, expectedNbLeds) {
-  return expectedNbLeds == 1 ? rawStandardIhmCommand(received, expectedNbLeds) 
-                             : received.substring(3 + expectedNbLeds * 3);
+  return rawStandardIhmCommand(received, expectedNbLeds);
 };
 
 const clearIhmCommand = function(received, expectedNbLeds) {
@@ -426,6 +432,13 @@ const ihmCommands = {
     clear: clearRingCommand,
     raw: rawRingCommand
   },
+  R : {
+    name: 'update_short_ring_status',
+    decode: decodeShortRingCommand,
+    isComplete: isShortRingCommandComplete,
+    clear: clearStandardIhmCommand,
+    raw: rawStandardIhmCommand
+  }
 };
 
 module.exports = {
@@ -436,6 +449,7 @@ module.exports = {
   'clearPlayerCommand': clearPlayerCommand,
 
   'encodeRingCommand': encodeRingCommand,
+  'encodeShortRingCommand': encodeShortRingCommand,
   'encodeZoneColorCommand': encodeZoneColorCommand,
   'encodeZoneOnCommand': encodeZoneOnCommand,
   'encodeZoneOffCommand': encodeZoneOffCommand,

@@ -104,3 +104,36 @@ input.short {
   width: 6em;
 }
 
+#zone_controller {
+  border: #FFFFFF solid;
+  padding: 15px;
+}
+
+.color_controller {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-top: #FFFFFF solid;
+  border-bottom: #FFFFFF solid;
+}
+
+.first {
+  padding-left: 15px;
+  border-left: #FFFFFF solid;
+}
+
+.last {
+  padding-right: 15px;
+  border-right: #FFFFFF solid;
+}
+
+.color_controller.last {
+  margin-right:15px;
+}
+
+.ring_controller {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-top: #FFFFFF solid;
+  border-bottom: #FFFFFF solid;
+}
+

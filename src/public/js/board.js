@@ -156,6 +156,15 @@ const appManageConnectedSocket = function(socket, config) {
     changeRingColor(r,c,[0, 0, 0]);
   };
 
+  socket.on('update_short_ring_status', (timestamp, raw, color) => {
+    logInTerm(timestamp, raw, color);
+    try {
+      changeRingColor(color.row, color.column, color.color);
+    } catch(error) {
+      console.log(error);
+    }
+  });
+
   socket.on('update_ring_status', (timestamp, raw, status) => {
     logInTerm(timestamp, raw, status);
     try {
@@ -231,14 +240,14 @@ const appManageConnectedSocket = function(socket, config) {
           zone[r][c].blink.on=zone_blink.on;
           zone[r][c].blink.off=zone_blink.off;
 
-          const turnOn = () => {
+          let turnOn = () => {
             if (zone[r][c].status == 'blink') {
               turnOnRing(r,c);
               setTimeout(turnOff, zone[r][c].blink.on);
             }
           };
 
-          const turnOff = () => {
+          let turnOff = () => {
             if (zone[r][c].status == 'blink') {
               turnOffRing(r,c);
               setTimeout(turnOn, zone[r][c].blink.off);

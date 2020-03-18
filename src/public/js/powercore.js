@@ -75,7 +75,8 @@ const appManageConnectedSocket = function(socket, config) {
       parseInt($('#color-input-green').val()),
       parseInt($('#color-input-blue').val())
     ];
-    for(let i = 0; i < config.leds_per_ring; i++) {
+    for(let led = 0; led < config.leds_per_ring; led++) {
+      displayLed(ctx, led, {x:75, y:75}, config, color);
       status.push(color);
     }
   }
@@ -130,6 +131,19 @@ const appManageConnectedSocket = function(socket, config) {
     });
   });
 
+  $('#send_short_ring').off();
+  $('#send_short_ring').on('click', () => {
+    let color = [ 
+      parseInt($('#color-input-red').val()),
+      parseInt($('#color-input-green').val()),
+      parseInt($('#color-input-blue').val())
+    ];
+    socket.emit('ring_short_update', { 
+      'row': parseInt($('#ring_row').val()), 
+      'column': parseInt($('#ring_col').val()),
+      'color': color
+    });
+  });
   $('#send_zone_color').off();
   $('#send_zone_color').on('click', () => {
     let color = [ 
