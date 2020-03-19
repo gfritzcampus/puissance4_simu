@@ -79,7 +79,7 @@ const decodeShortRingCommand = function(rawdata, expectedNbLeds) {
 };
 
 const isShortRingCommandComplete = function(rawdata, expectedNbLeds) {
-  return rawdata.length == 10 && rawdata[0] == 'R' && rawdata[9] == '\n';
+  return rawdata.length >= 10 && rawdata[0] == 'R' && rawdata[9] == '\n';
 };
 
 const isZoneColorCommandComplete = function(rawdata, expectedNbLeds) {
