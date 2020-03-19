@@ -47,7 +47,7 @@ io.of('ihm').on('connection', function(socket) {
     console.log('Received from core: ' + JSON.stringify(data));
     received = codec.accumulateIhmCommand(received, data);
 
-    while (board.leds_per_ring == 1 && !codec.isIhmCommandComplete(received, board.leds_per_ring) && received.indexOf('\n') != -1) {
+    while (!codec.isIhmCommandComplete(received, board.leds_per_ring) && received.indexOf('\n') != -1) {
       received = received.substring(received.indexOf('\n')+1);
     }
 
