@@ -268,9 +268,23 @@ const appManageConnectedSocket = function(socket, config) {
       console.log(error);
     }
   });
+  
+  socket.on('debug', (timestamp, raw, debug) => {
+    logInTerm(timestamp, raw, debug);
+    date = new Date();
+    date.setTime(timestamp);
+    $('#last_debug').text(date.toISOString() + ' : ' +debug.msg);
+  });
 
   const sendSensorLight = function() {
-    socket.emit('light_sensor_value', parseInt($('#light_sensor_value').val()));
+    try {
+      let value = parseInt($('#light_sensor_value').val());
+      if (value >= 0 && value <= 255) {
+        socket.emit('light_sensor_value', value);
+      }
+    } catch(error) {
+      console.log(error);
+    }
   };
 
   let light_sensor_timer = undefined;
@@ -284,6 +298,13 @@ const appManageConnectedSocket = function(socket, config) {
     }
   });
 
+  socket.on('disconnect', () => {
+    clearInterval(light_sensor_timer);
+    $('#light_sensor_period').prop('disabled', false);
+    $('#light_sensor_status').prop('checked', false);
+  });
+
+  $('#light_sensor_send').off();
   $('#light_sensor_send').on('click', () => {
     sendSensorLight();
   });

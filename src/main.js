@@ -29,6 +29,24 @@ app.get('/static/css/octicons.css', function(req, res) {
   res.sendFile(path.resolve(__dirname, '../node_modules/octicons/build/build.css'));
 });
 
+debug_file = undefined;
+const localCommandManager = function(decoded) {
+  if (decoded.name == 'debug' && debug_file) {
+    return new Promise((resolve, reject) => {
+      let fs = require('fs');
+      timestamp = new Date();
+      timestamp.setTime(decoded.timestamp);
+      fs.write(debug_file, timestamp.toISOString() + '\tDEBUG\t' + decoded.decoded.msg + '\n', (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  }
+};
+
 io.of('ihm').on('connection', function(socket) {
   console.log('an ihm user connected');
   let current_board = [];
@@ -57,7 +75,8 @@ io.of('ihm').on('connection', function(socket) {
         let decoded = codec.decodeIhmCommand(received, board.leds_per_ring);
 
         let promise = new Promise((resolve, reject) => {
-          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded);
+          socket.emit(decoded.name , decoded.timestamp, decoded.raw, decoded.decoded);
+          localCommandManager(decoded);
           resolve();
         });
         promise.then(() => {
@@ -103,7 +122,7 @@ io.of('core').on('connection', function(socket) {
         let decoded = codec.decodeCoreCommand(received);
 
         let promise = new Promise((resolve, reject) => {
-          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded);
+          socket.emit(decoded.name, decoded.timestamp, decoded.raw, decoded.decoded);
           resolve();
         });
         promise.then(() => {
@@ -142,6 +161,10 @@ io.of('core').on('connection', function(socket) {
   socket.on('zone_blink', function(data) {
     serial.write(codec.encodeZoneBlinkCommand(data.zone, data.blink));
   });
+
+  socket.on('debug', function(data) {
+    serial.write(codec.encodeDebugCommand(data));
+  });
 });
 
 console.log(JSON.stringify(process.argv));
@@ -164,12 +187,17 @@ http.listen(argv.hasOwnProperty('port') ? argv.port : 3000, function() {
   console.log('You can access to serveur using : http://localhost:' + port);
   let fs = require('fs');
   fs.writeFileSync('.simu_env', 'SIMU_PORT='+port+'\nSIMU_PID='+process.pid+'\n');
+  debug_file = fs.openSync(board.debug_file, 'a');
 });
 
 function exitHandler(options, exitCode) {
   if (options.cleanup) {
     let fs = require('fs');
     fs.unlinkSync('.simu_env');
+
+    if (debug_file) {
+      fs.closeSync(debug_file);
+    }
   }
   if (exitCode || exitCode === 0) console.log(exitCode);
   if (options.exit) process.exit();

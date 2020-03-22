@@ -211,7 +211,8 @@ const decodeIhmCommand = function(rawdata, expectedNbLeds) {
   return {
     name: ihmCommands[rawdata[0]].name,
     decoded: ihmCommands[rawdata[0]].decode(rawdata, expectedNbLeds),
-    raw: ihmCommands[rawdata[0]].raw(rawdata, expectedNbLeds)
+    raw: ihmCommands[rawdata[0]].raw(rawdata, expectedNbLeds),
+    timestamp: new Date().getTime()
   };
 }
 
@@ -346,7 +347,8 @@ const decodeCoreCommand = function(rawdata) {
   return {
     name: coreCommands[rawdata[0]].name,
     decoded: coreCommands[rawdata[0]].decode(rawdata),
-    raw: coreCommands[rawdata[0]].raw(rawdata)
+    raw: coreCommands[rawdata[0]].raw(rawdata),
+    timestamp: new Date().getTime()
   };
 }
 
@@ -439,6 +441,33 @@ const decodeLightSensorCommand = function(rawdata) {
   return {};
 };
 
+const encodeDebugCommand = function(msg) {
+  let cmd = 'd';
+
+  cmd += msg;
+  cmd += '\n';
+
+  return cmd;
+};
+
+const isDebugCommandComplete = function(rawdata) {
+  return rawdata.length >= 2 && rawdata[0] == 'd' && rawdata.indexOf('\n') != -1;
+};
+
+const decodeDebugCommand = function(received) {
+  console.log('Try to decode debug on command : ' + JSON.stringify(received));
+  if(isDebugCommandComplete(received)) {
+    return  {
+      msg : received.substring(1, received.indexOf('\n'))
+    };
+  }
+  return {};
+};
+
+const rawDebugCommand = function(rawdata) {
+  return "";
+};
+
 const coreCommands = {
   p : {
     name: 'player_event',
@@ -505,6 +534,13 @@ const ihmCommands = {
     isComplete: isShortRingCommandComplete,
     clear: clearStandardIhmCommand,
     raw: rawStandardIhmCommand
+  },
+  d : {
+    name: 'debug',
+    decode: decodeDebugCommand,
+    isComplete: isDebugCommandComplete,
+    clear: clearCoreCommand,
+    raw: rawDebugCommand
   }
 };
 
@@ -518,7 +554,7 @@ module.exports = {
   'accumulateCoreCommand': accumulateCoreCommand,
   'clearCoreCommand': clearCoreCommand,
   
-
+  'encodeDebugCommand': encodeDebugCommand,
   'encodeRingCommand': encodeRingCommand,
   'encodeShortRingCommand': encodeShortRingCommand,
   'encodeZoneColorCommand': encodeZoneColorCommand,
