@@ -78,6 +78,11 @@ io.of('ihm').on('connection', function(socket) {
     console.log('Player ' + player + ' => ' + action + ' : ' + status);
     serial.write(codec.encodePlayerCommand(player, action, status));
   });
+
+  socket.on('light_sensor_value', (value) => {
+    console.log('Light sensor : ' + value);
+    serial.write(codec.encodeLightSensorCommand(value));
+  });
 });
 
 io.of('core').on('connection', function(socket) {
@@ -85,18 +90,29 @@ io.of('core').on('connection', function(socket) {
 
   let received = "";
   serial = new powerSerialPort(socket, (data) => {
-    console.log('Received from IHM: ' + JSON.stringify(data));
-    received = codec.accumulatePlayerCommand(received, data);
+    console.log('Received from ihm: ' + JSON.stringify(data));
+    received = codec.accumulateCoreCommand(received, data);
 
-    while(!codec.isPlayerCommandComplete(received) && received.indexOf('\n') != -1) {
+    while (!codec.isCoreCommandComplete(received) && received.indexOf('\n') != -1) {
       received = received.substring(received.indexOf('\n')+1);
     }
 
-    while(codec.isPlayerCommandComplete(received)) {
-      let decoded = codec.decodePlayerCommand(received);
-      socket.emit('player_event', new Date().getTime(), received, decoded);
-      received = codec.clearPlayerCommand(received);
-    }
+    async.whilst(
+      (cb) => cb(null,codec.isCoreCommandComplete(received)),
+      (next) => {
+        let decoded = codec.decodeCoreCommand(received);
+
+        let promise = new Promise((resolve, reject) => {
+          socket.emit(decoded.name ,new Date().getTime(), decoded.raw, decoded.decoded);
+          resolve();
+        });
+        promise.then(() => {
+          received = codec.clearCoreCommand(received, board.leds_per_ring);
+          next(null, received);
+        });
+      },
+      (err, n) => {}
+    );
   });
 
   socket.on('ring_update', function(data) {

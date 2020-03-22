@@ -294,16 +294,33 @@ const decodePlayerCommand = function(rawdata) {
                  rawdata[3] == 'd' ? 'down' :
                                      'unknown'
 
-    return { 'player': player, 'command': command, 'status': status };
+    return { player: player, command: command, status: status };
   }
 
   return {};
 };
 
-const accumulatePlayerCommand = function(received, rawdata) {
+const rawCoreCommand = function(received) {
+  return received.substring(0, received.indexOf('\n'));
+};
+
+const isCoreCommand = function(command) {
+  for(let key in coreCommands) {
+    if (key == command) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const isCoreCommandComplete = function(rawdata) {
+  return isCoreCommand(rawdata[0]) && coreCommands[rawdata[0]].isComplete(rawdata);
+};
+
+const accumulateCoreCommand = function(received, rawdata) {
   rawdata = rawdata.toString();
   for (let i = 0; i < rawdata.length; i++) {
-    if (rawdata[i] == 'p' && received[0] != 'p') {
+    if (!isCoreCommand(received[0])) {
       received = rawdata[i];
     } else {
       received += rawdata[i];
@@ -316,12 +333,22 @@ const isPlayerCommandComplete = function(rawdata) {
   return rawdata.length >= 5 && rawdata[0] == 'p' && rawdata[4] == '\n';
 };
 
-const clearPlayerCommand = function(received) {
+const clearCoreCommand = function(received) {
   do {
     received = received.substring(received.indexOf('\n')+1);
-  } while(received.length > 0 && received[0] != 'p');
+  } while(received.length > 0 && !isCoreCommand(received[0]));
   return received;
 };
+
+const decodeCoreCommand = function(rawdata) {
+  if (!isCoreCommand(rawdata[0]))
+    return undefined;
+  return {
+    name: coreCommands[rawdata[0]].name,
+    decoded: coreCommands[rawdata[0]].decode(rawdata),
+    raw: coreCommands[rawdata[0]].raw(rawdata)
+  };
+}
 
 const encodeZoneColorCommand = function(zone, color) {
   let cmd='c';
@@ -389,6 +416,46 @@ const encodeZoneBlinkCommand = function(zone, blink) {
   return cmd;
 };
 
+const encodeLightSensorCommand = function(value) {
+  let cmd = 'l';
+
+  cmd += encodeByteToHex(value);
+  cmd += '\n';
+
+  return cmd;
+}; 
+
+const isLightSensorCommandComplete = function(rawdata) {
+  return rawdata.length >= 4 && rawdata[0] == 'l' && rawdata[3] == '\n';
+};
+
+const decodeLightSensorCommand = function(rawdata) {
+  console.log('Try to decode light sensor value on command : ' + JSON.stringify(rawdata));
+  if(isLightSensorCommandComplete(rawdata)) {
+    return {
+      light_sensor: parseInt(rawdata[1] + rawdata[2], 16)
+    };
+  }
+  return {};
+};
+
+const coreCommands = {
+  p : {
+    name: 'player_event',
+    decode: decodePlayerCommand,
+    isComplete: isPlayerCommandComplete,
+    clear: clearCoreCommand,
+    raw: rawCoreCommand
+  },
+  l : {
+    name: 'light_sensor',
+    decode: decodeLightSensorCommand,
+    isComplete: isLightSensorCommandComplete,
+    clear: clearCoreCommand,
+    raw: rawCoreCommand
+  }
+};
+
 const ihmCommands = {
   c : {
     name: 'change_zone_color',
@@ -441,12 +508,16 @@ const ihmCommands = {
   }
 };
 
+
 module.exports = {
   'encodePlayerCommand': encodePlayerCommand,
-  'decodePlayerCommand': decodePlayerCommand,
-  'isPlayerCommandComplete': isPlayerCommandComplete,
-  'accumulatePlayerCommand': accumulatePlayerCommand,
-  'clearPlayerCommand': clearPlayerCommand,
+  'encodeLightSensorCommand': encodeLightSensorCommand,
+
+  'decodeCoreCommand': decodeCoreCommand,
+  'isCoreCommandComplete': isCoreCommandComplete,
+  'accumulateCoreCommand': accumulateCoreCommand,
+  'clearCoreCommand': clearCoreCommand,
+  
 
   'encodeRingCommand': encodeRingCommand,
   'encodeShortRingCommand': encodeShortRingCommand,
