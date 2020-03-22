@@ -153,3 +153,8 @@ input.short {
   background-color: #282828;
 }
 
+#last_debug {
+  width: 100%;
+  border: #FFFFFF solid;
+}
+

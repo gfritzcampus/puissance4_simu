@@ -243,6 +243,10 @@ const appManageConnectedSocket = function(socket, config) {
     });
   });
 
+  $('#send_debug').off();
+  $('#send_debug').on('click', () => {
+    socket.emit('debug', $('#debug_msg').val());
+  });
 };
 
 const fillGradient = function(ctxBlock, ctxStrip, widthBlock, heightBlock, colorBase) {
