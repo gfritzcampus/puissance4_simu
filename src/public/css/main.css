@@ -21,6 +21,13 @@ body {
 .controls {
   max-width: 330px;
   margin: 0 auto;
+  padding: 0;
+  padding-top: 15px;
+  border: #FFFFFF solid;
+}
+
+.controls div {
+  padding: 0;
 }
 
 .main > .row {
@@ -135,5 +142,14 @@ input.short {
   padding-bottom: 15px;
   border-top: #FFFFFF solid;
   border-bottom: #FFFFFF solid;
+}
+
+.light_sensor {
+  background-color: rgb(255,255,255);
+}
+
+#light_sensor_value {
+  color:white;
+  background-color: #282828;
 }
 

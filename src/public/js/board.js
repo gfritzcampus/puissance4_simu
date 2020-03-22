@@ -159,7 +159,14 @@ const appManageConnectedSocket = function(socket, config) {
   socket.on('update_short_ring_status', (timestamp, raw, color) => {
     logInTerm(timestamp, raw, color);
     try {
-      changeRingColor(color.row, color.column, color.color);
+      zone[color.row][color.column].color = color.color;
+      if (color.color[0] == 0 && color.color[1] == 0 && color.color[2] == 0) {
+        turnOffRing(color.row, color.column);
+        zone[color.row][color.column].status = 'off';
+      } else {
+        turnOnRing(color.row, color.column);
+        zone[color.row][color.column].status = 'on';
+      }
     } catch(error) {
       console.log(error);
     }
@@ -261,15 +268,34 @@ const appManageConnectedSocket = function(socket, config) {
       console.log(error);
     }
   });
+
+  const sendSensorLight = function() {
+    socket.emit('light_sensor_value', parseInt($('#light_sensor_value').val()));
+  };
+
+  let light_sensor_timer = undefined;
+  $('#light_sensor_status').change(() => {
+    if ($('#light_sensor_status')[0].checked) {
+      light_sensor_timer = setInterval(sendSensorLight, $('#light_sensor_period').val());
+      $('#light_sensor_period').prop('disabled', true);
+    } else {
+      clearInterval(light_sensor_timer);
+      $('#light_sensor_period').prop('disabled', false);
+    }
+  });
+
+  $('#light_sensor_send').on('click', () => {
+    sendSensorLight();
+  });
 };
 
 $(() => {
-  term = $('#console').terminal((cmd, term) => {
-    term.echo(''); // Simply do nothing!
-  }, {
+  term = $('#console').terminal(() => {}, {
     grettings: 'Serial incoming',
     name: 'serial_incoming',
     height: 400,
-    prompt: ''
+    prompt: '',
+    enabled: false
   });
+
 });

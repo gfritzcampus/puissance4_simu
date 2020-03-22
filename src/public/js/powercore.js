@@ -36,6 +36,14 @@ const displayRing = function(ctx, config, status) {
 }
 
 const appInitSocket = function(socket) {
+  socket.on('light_sensor', (timestamp, raw, decoded) => {
+    if (term) {
+      term.echo(JSON.stringify({'timestamp': timestamp, 'raw':raw, 'decoded': decoded}));
+    }
+    let rgb = decoded.light_sensor.toString();
+    $('#light_sensor_value').text(rgb);
+    $('.light_sensor').css('background-color', 'rgb('+rgb+','+rgb+','+rgb+')');
+  });
   socket.on('player_event', (timestamp, raw, decoded) => {
     console.log(raw);
     if (term) {
