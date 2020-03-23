@@ -66,7 +66,8 @@ const askToConnect = function(socket) {
   waitingSerialPanel();
   let port = $('#serial_available option:selected').val();
   port = port == 'custom' ? $('#serial_custom').val() : port;
-  socket.emit('connect_to_board', port);
+  baudrate = parseInt($('#serial_baudrate option:selected').val());
+  socket.emit('connect_to_board', port, baudrate);
 };
 
 $(function() {

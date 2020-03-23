@@ -37,14 +37,14 @@ const powerSerialPort = function(socket, data_decoder) {
     fn(this.serial ? this.serial.isOpen : false);
   });
 
-  socket.on('connect_to_board', (path) => {
-    console.log('Ask to connect to "' + path + '"');
+  socket.on('connect_to_board', (path, baudrate) => {
+    console.log('Ask to connect to "' + path + '" at ' + baudrate);
     if (this.serial && this.serial.isOpen) {
       this.serial.close();
     }
 
     try {
-      this.serial = new serialPort(path, (err) => {
+      this.serial = new serialPort(path, { baudRate: baudrate}, (err) => {
         if (err) {
           console.log('Error trying to connect: ' + err);
           socket.emit('serial_error_connection', err);
