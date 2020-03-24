@@ -390,4 +390,13 @@ $(() => {
   $('#color-input-red').on('change', changeColorFromInput);
   $('#color-input-green').on('change', changeColorFromInput);
   $('#color-input-blue').on('change', changeColorFromInput);
+
+  $('.advanced').hide();
+  $('#advanced_view').change(() => {
+    if ($('#advanced_view')[0].checked) {
+      $('.advanced').hide();
+    } else {
+      $('.advanced').show();
+    }
+  });
 });

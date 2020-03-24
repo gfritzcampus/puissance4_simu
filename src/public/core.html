@@ -54,6 +54,9 @@
         <div class="col-sm hide" id="panel_serial_waiting">
           Action en cours...
         </div>
+        <div class="col-sm">
+          <input type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger" id="advanced_view" data-on="Simple" data-off="Advanced" />
+        </div>
       </div>
       <div class="row">
         <div class="col-sm">
@@ -156,15 +159,15 @@
                   </div>
                 </div>
               </div>
-              <div class="col-sm many-leds ring_controller first">
-                <canvas width="150px" height="150px" id="ring"></canvas><br />
-                <button class="btn btn-success many-leds" id="all_leds">Toutes</button>
+              <div class="col-sm many-leds ring_controller first advanced">
+                <canvas class="advanced" width="150px" height="150px" id="ring"></canvas><br />
+                <button class="btn btn-success many-leds advanced" id="all_leds">Toutes</button>
               </div>
               <div class="col-sm ring_controller last">
                 Colonne : <input type="number" min="0" max="6" step="1" class="coordonate-col coordonate" value="0" id="ring_col" /><br />
                 Ligne : <input type="number" min="0" max="6" step="1" class="coordonate-row coordonate" value="0" id="ring_row" /><br />
-                <button class="btn btn-success" id="send_ring">Envoyer l'anneau complet</button><br />
-                <button class="btn btn-success" id="send_short_ring">Envoyer une seule couleur</button>
+                <button class="btn btn-success advanced" id="send_ring">Envoyer l'anneau complet</button><br />
+                <button class="btn btn-success" id="send_short_ring">Envoyer la couleur</button>
               </div>
             </div>
           </div>
@@ -224,7 +227,7 @@
                 <div class="col-sm">
                 </div>
               </div>
-              <div class="row">
+              <div class="row advanced">
                 <div class="col-sm">
                   Clignotement
                 </div>
@@ -240,11 +243,11 @@
         </div>
         <div class="col-sm">
           <div id="zone-actions">
-            <button class="btn btn-success" id="send_zone_color">Change la couleur de la zone</button>
-            <button class="btn btn-success" id="send_zone_on">Allume la zone</button>
-            <button class="btn btn-success" id="send_zone_off">Eteint la zone</button>
+            <button class="btn btn-success advanced" id="send_zone_color">Change la couleur de la zone</button>
+            <button class="btn btn-success advanced" id="send_zone_on">Allume la zone</button>
+            <button class="btn btn-success advanced" id="send_zone_off">Eteint la zone</button>
             <button class="btn btn-success" id="send_zone_intensity">Change l'intensité de la zone</button>
-            <button class="btn btn-success" id="send_zone_blink">Change le clignotement de la zone</button>
+            <button class="btn btn-success advanced" id="send_zone_blink">Change le clignotement de la zone</button>
           </div>
         </div>
       </div>
