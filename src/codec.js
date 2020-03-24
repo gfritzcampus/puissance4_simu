@@ -539,8 +539,8 @@ const ihmCommands = {
     name: 'debug',
     decode: decodeDebugCommand,
     isComplete: isDebugCommandComplete,
-    clear: clearCoreCommand,
-    raw: rawDebugCommand
+    clear: clearStandardIhmCommand,
+    raw: rawStandardIhmCommand
   }
 };
 
